@@ -98,7 +98,7 @@ class Token(models.Model):
         max_length=40,
         primary_key=True
     )
-    user =models.OneToOneField(
+    user =models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name='auth_token',
         on_delete=models.CASCADE,

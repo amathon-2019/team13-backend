@@ -31,10 +31,10 @@ class LoginAPIView(GenericAPIView):
                 status=status.HTTP_401_UNAUTHORIZED
             )
             
-        token, created = Token.objects.get_or_create(user=user)
+        token = Token.objects.create(user=user)
 
         return Response({
-            'token': token
+            'token': token.key
         })
 
 
@@ -50,10 +50,10 @@ class SignUpAPIView(GenericAPIView):
         serializer.is_valid(raise_exception=True)
 
         user = serializer.save()
-        token = generate_jwt_token(user)
+        token = Token.objects.create(user=user)
 
         return Response({
-            'token': token
+            'token': token.key
         }, status=status.HTTP_201_CREATED)
 
 

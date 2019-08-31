@@ -9,20 +9,12 @@ from apps.history.enums import DeviceType
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
-    device = serializers.ChoiceField(
-        choices=DeviceType.choices()
-    )
 
     def login(self):
         user = authenticate(
             username=self.validated_data['username'],
             password=self.validated_data['password']
         )
-        if user is not None:
-            History.objects.create(**{
-                'user': user,
-                'device': self.validated_data['device']
-            })
 
         return user
 

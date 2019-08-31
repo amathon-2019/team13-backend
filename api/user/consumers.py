@@ -1,11 +1,11 @@
 import json
-from channels.generic.websocket import WebsocketConsumer
+from channels.generic.websocket import AsyncWebsocketConsumer
 from apps.history.models import History
 from apps.user.models import Token
 
 
-class UserConsumers(WebsocketConsumer):
-    def connect(self):
+class UserConsumers(AsyncWebsocketConsumer):
+    async def connect(self):
         self.user = self.scope["user"]
         self.token_key = self.scope["token"]
 
@@ -17,12 +17,20 @@ class UserConsumers(WebsocketConsumer):
             )
             history.is_active = True
             history.save()
+
+            self.room_name = self.token.user.id
+            self.room_group_name = 'user_{}'.format(self.room_name)
+
+            await self.channel_layer.group_add(
+                self.room_group_name,
+                self.channel_name
+            )
         else:
             self.token = None
 
-        self.accept()
+        await self.accept()
 
-    def disconnect(self, close_code):
+    async def disconnect(self, close_code):
         if self.token:
             history = History.objects.filter(
                 token=self.token
@@ -31,5 +39,33 @@ class UserConsumers(WebsocketConsumer):
                 history.is_active = False
                 history.save()
 
-    def receive(self, text_data):
-        pass
+                await self.channel_layer.group_discard(
+                    self.room_group_name,
+                    self.channel_name
+                )
+
+    async def receive(self, text_data):
+        text_data_json = json.loads(text_data)
+        device = text_data_json['device']
+
+        if self.token:
+            history = self.token.history 
+            history.device = device
+            history.save()
+
+        await self.channel_layer.group_send(
+            self.room_group_name,
+            {
+                'type': 'user_logged_in',
+                'token': self.token_key
+            }
+        )
+
+    async def user_logged_in(self, event):
+        token = event['token']
+
+        if token != self.token_key:
+            self.token.delete()
+            await self.send(text_data=json.dumps({
+                'is_logged_in': False
+            }))

@@ -26,8 +26,6 @@ class TokenAuthMiddleware:
         try:
             token = Token.objects.get(key=token_key)
             
-            print(token)
-
             if token.expired > timezone.now():
                 scope['user'] = token.user
                 scope['token'] = token.key

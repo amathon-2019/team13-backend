@@ -4,3 +4,5 @@ channels==2.2.0
 django-split-settings==0.3.0
 psycopg2-binary==2.8.3
 django-cors-headers==3.1.0
+channels-redis==2.4.0
+zappa==0.48.2

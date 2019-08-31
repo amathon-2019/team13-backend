@@ -13,7 +13,7 @@ class HistoryListAPIView(GenericAPIView):
         queryset = super().get_queryset()
 
         queryset = queryset.filter(
-            token__user_id=self.request.user.id
+            user_id=self.request.user.id
         )
 
         return queryset

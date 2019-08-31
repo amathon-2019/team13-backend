@@ -18,4 +18,9 @@ urlpatterns = [
         views.DuplicateAPIView.as_view(),
         name='duplicate',
     ),
+    path(
+        'token/',
+        views.TokenListAPIView.as_view(),
+        name='token'
+    )
 ]

@@ -8,7 +8,6 @@ class HistorySerializer(serializers.ModelSerializer):
         model = History
         fields = [
             'device',
-            'is_active',
             'created',
             'updated',
         ]

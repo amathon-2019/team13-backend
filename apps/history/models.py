@@ -3,20 +3,16 @@ from .enums import DeviceType
 
 
 class History(models.Model):
-    token = models.OneToOneField(
-        'user.Token',
+    user = models.ForeignKey(
+        'user.User',
         on_delete=models.CASCADE,
-        verbose_name='토큰'
+        verbose_name='유저'
     )
     device = models.SmallIntegerField(
         '디바이스',
         choices=DeviceType.choices(),
         null=True,
         blank=True
-    )
-    is_active = models.BooleanField(
-        '활성화 여부',
-        default=True
     )
     created = models.DateTimeField(
         '생성일',

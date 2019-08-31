@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from django.db import models
 from django.conf import settings
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from .enums import DeviceType
 
 
 class UserManager(BaseUserManager):
@@ -97,6 +98,12 @@ class Token(models.Model):
         '키',
         max_length=40,
         primary_key=True
+    )
+    device = models.SmallIntegerField(
+        '디바이스',
+        choices=DeviceType.choices(),
+        null=True,
+        blank=True
     )
     user =models.ForeignKey(
         settings.AUTH_USER_MODEL,

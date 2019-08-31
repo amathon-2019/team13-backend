@@ -1,7 +1,7 @@
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 
-from apps.user.models import User
+from apps.user.models import User, Token
 from apps.history.models import History
 from apps.history.enums import DeviceType
 
@@ -9,14 +9,23 @@ from apps.history.enums import DeviceType
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()
+    device = serializers.ChoiceField(
+        choices=DeviceType.choices()
+    )
 
     def login(self):
         user = authenticate(
             username=self.validated_data['username'],
-            password=self.validated_data['password']
+            password=self.validated_data['password'],
         )
 
-        return user
+        if user is not None:
+            History.objects.create(
+                user=user,
+                device=self.validated_data['device']
+            )
+
+        return user, self.validated_data['device']
 
 
 class SignUpSerializer(serializers.Serializer):
@@ -49,3 +58,14 @@ class DuplicateSerializer(serializers.Serializer):
         return User.objects.filter(
             username=self.validated_data['username']
         ).exists()
+
+
+class TokenSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Token
+        fields = [
+            'key',
+            'device',
+            'created',
+            'updated',
+        ]

@@ -1,3 +1,4 @@
+from urllib import parse
 from channels.auth import AuthMiddlewareStack
 from django.contrib.auth.models import AnonymousUser
 from django.utils import timezone
@@ -15,22 +16,29 @@ class TokenAuthMiddleware:
         self.inner = inner
 
     def __call__(self, scope):
-        print(scope)
-        headers = dict(scope['headers'])
-        if b'authorization' in headers:
-            try:
-                token_name, token_key = headers[b'authorization'].decode().split()
-                if token_name == 'Bearer':
-                    token = Token.objects.get(key=token_key)
-                    
-                    if token.expire > timezone.now():
-                        scope['user'] = token.user
-                    else:
-                        token.is_active = False
-                        token.save()
-                        scope['user'] = AnonymousUser()
-            except Token.DoesNotExist:
+        query_string = scope.get('query_string')
+        query_string = dict(parse.parse_qsl(query_string))
+
+        token_key = query_string.get(b'token')
+        if token_key:
+            token_key = token_key.decode()
+        
+        try:
+            token = Token.objects.get(key=token_key)
+            
+            print(token)
+
+            if token.expired > timezone.now():
+                scope['user'] = token.user
+                scope['token'] = token.key
+            else:
+                token.is_active = False
+                token.save()
                 scope['user'] = AnonymousUser()
+                scope['token'] = None
+        except Token.DoesNotExist:
+            scope['user'] = AnonymousUser()
+            scope['token'] = None
 
         return self.inner(scope)
 

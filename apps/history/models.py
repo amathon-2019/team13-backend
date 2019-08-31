@@ -1,17 +1,18 @@
 from django.db import models
-from django.conf import settings
 from .enums import DeviceType
 
 
 class History(models.Model):
-    user = models.ForeignKey(
-        settings.AUTH_USER_MODEL,
+    token = models.OneToOneField(
+        'user.Token',
         on_delete=models.CASCADE,
-        verbose_name='유저'
+        verbose_name='토큰'
     )
     device = models.SmallIntegerField(
         '디바이스',
         choices=DeviceType.choices(),
+        null=True,
+        blank=True
     )
     is_active = models.BooleanField(
         '활성화 여부',
